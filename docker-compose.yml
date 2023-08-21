@@ -1,0 +1,44 @@
+version: "3"
+services:
+  rates-db:
+    image: postgres:14
+    ports:
+      - "5433:5432"
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_SERVER=rates-fastapi-db
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=postgres
+    restart: always
+
+  rates-fastapi:
+    build: .
+    depends_on:
+      - rates-db
+    ports:
+      - "8000:8000"
+    environment:
+        - DB_HOST=rates-db
+        - DB_USER=${DB_USER}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - DB_NAME=postgres
+        - REDIS_HOST=redis
+        - REDIS_CACHE_EXPIRE=${REDIS_CACHE_EXPIRE}
+        - SECRET_KEY=${SECRET_KEY}
+    command: sh -c "uvicorn --host 0.0.0.0 --port 8000 main:fastapi_app" --workers ${WORKERS}
+    restart: always
+
+  redis:
+    image: redis:6.2.5
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: always
+
+volumes:
+  app-db-data:
+  redis-data:
