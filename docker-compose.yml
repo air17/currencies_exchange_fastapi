@@ -2,8 +2,6 @@ version: "3"
 services:
   rates-db:
     image: postgres:14
-    ports:
-      - "5433:5432"
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
     environment:
@@ -33,8 +31,6 @@ services:
 
   redis:
     image: redis:6.2.5
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     restart: always
