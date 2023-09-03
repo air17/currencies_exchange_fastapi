@@ -4,7 +4,7 @@ from redis.asyncio import Redis
 
 from core.authentication import current_active_user
 from core.dependencies import get_redis
-from core.exchangerate_client import get_rates, get_rate_for_currency
+from core.exchange_providers import ExchangeRateHostClient
 from core.models.users import User
 from utils import get_logger
 
@@ -20,8 +20,8 @@ async def get_all_rates(
     _: User = Depends(current_active_user),
 ) -> dict[str, float]:
     """Returns all rates."""
-    date = date.isoformat() if date else "latest"
-    return await get_rates(date, redis=redis, background_tasks=background_tasks)
+    exchange_client = ExchangeRateHostClient(redis=redis, background_tasks=background_tasks)
+    return await exchange_client.get_rates(date)
 
 
 @router.get("/{currency}")
@@ -33,9 +33,8 @@ async def get_currency_rate(
     redis: Redis = Depends(get_redis),
 ) -> dict[str, float]:
     """Returns rate for a given currency."""
-    date = date.isoformat() if date else "latest"
+    exchange_client = ExchangeRateHostClient(redis=redis, background_tasks=background_tasks)
     try:
-        rate = await get_rate_for_currency(currency, date, redis=redis, background_tasks=background_tasks)
+        return await exchange_client.get_rate_for_currency(currency, date)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    return rate
