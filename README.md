@@ -22,4 +22,5 @@ Steps:
 3. Start the service: `docker-compose up -d`
 4. Access the API docs through your web browser at http://127.0.0.1:8000/api/v1/docs.
 
-Adjust number of workers in `.env` to increase the number of requests per second.
+The application can withstand a load of 1500 requests per second without any additional configuration.
+Adjust number of workers for your CPU in `.env` to increase the number of processed requests per second.
